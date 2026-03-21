@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from routers import news
+from routers import news, users
 
 
 app = FastAPI()
@@ -27,4 +27,5 @@ async def root():
 
 # 注册路由
 app.include_router(news.router)
+app.include_router(users.router)
 
