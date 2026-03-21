@@ -84,27 +84,33 @@ async def get_news_list(
 
 @router.get("/detail")
 async def get_news_detail(news_id: int = Query(..., alias="id"), db: AsyncSession = Depends(get_db)):
-    # 获取新闻详情 + 浏览量+1 + 相关新闻
+    # 获取新闻详情
     news_detail = await news.get_news_detail(db, news_id)
+    # 如果未找到新闻，则抛出404异常
     if not news_detail:
         raise HTTPException(status_code=404, detail="新闻不存在")
 
+    # 增加新闻阅读量
     views_res = await news.increase_news_views(db, news_detail.id)
+    # 如果更新阅读量失败（可能因为新闻已被删除），则抛出404异常
     if not views_res:
         raise HTTPException(status_code=404, detail="新闻不存在")
 
+    # 获取相关推荐新闻列表（同一分类下的其他新闻）
+    related_news = await news.get_related_news(db, news_detail.id, news_detail.category_id)
+
     return {
-      "code": 200,
-      "message": "success",
-      "data": {
-        "id": news_detail.id,
-        "title": news_detail.title,
-        "content": news_detail.content,
-        "image": news_detail.image,
-        "author": news_detail.author,
-        "publishTime": news_detail.publish_time,
-        "categoryId": news_detail.category_id,
-        "views": news_detail.views,
-        "relatedNews": "相关新闻"
-      }
+        "code": 200,
+        "message": "success",
+        "data": {
+            "id": news_detail.id,
+            "title": news_detail.title,
+            "content": news_detail.content,
+            "image": news_detail.image,
+            "author": news_detail.author,
+            "publishTime": news_detail.publish_time,
+            "categoryId": news_detail.category_id,
+            "views": news_detail.views,
+            "relatedNews": related_news
+        }
     }
