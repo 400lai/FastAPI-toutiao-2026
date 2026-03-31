@@ -45,16 +45,33 @@ async def create_token(db: AsyncSession, user_id: int):
     token = str(uuid.uuid4())
     # 设置 Token 过期时间为 7 天后
     expires_at = datetime.now() + timedelta(days=7)
+    # 查询用户是否已有 Token 记录
     query = select(UserToken).where(UserToken.user_id == user_id)
     result = await db.execute(query)
     user_token = result.scalar_one_or_none()
 
     if user_token:
+        # 已有记录则更新 Token 和过期时间
         user_token.token = token
         user_token.expires_at = expires_at
     else:
+        # 无记录则创建新的 Token 记录并提交
         user_token = UserToken(user_id=user_id, token=token, expires_at=expires_at)
         db.add(user_token)
         await db.commit()
 
     return token
+
+async def authenticate_user(db: AsyncSession, username: str, password: str):
+    # 根据用户名查询用户信息
+    user = await get_user_by_username(db, username)
+
+    # 用户不存在时返回 None
+    if not user:
+        return None
+    # 验证密码是否匹配
+    if not security.verify_password(password, user.password):
+        return None
+
+    # 认证成功，返回用户对象
+    return user
