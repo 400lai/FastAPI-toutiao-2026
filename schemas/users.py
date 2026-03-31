@@ -39,3 +39,11 @@ class UserAuthResponse(BaseModel):
         populate_by_name=True,  # 允许通过字段名或别名访问
         from_attributes=True  # 支持从 ORM 模型属性加载数据
     )
+
+# 更新用户信息的模型类
+class UserUpdateRequest(BaseModel):
+    nickname: str = None
+    avatar: str = None
+    gender: str = None
+    bio: str = None
+    phone: str = None
