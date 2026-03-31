@@ -4,15 +4,17 @@ from starlette import status
 
 from config.db_config import get_db
 from crud import users
+from models.users import User
 from schemas.users import UserRequest, UserAuthResponse, UserInfoResponse
+from utils.auth import get_current_user
 from utils.response import success_response
 
 router = APIRouter(prefix="/api/user", tags=["users"])
 
 
+# 注册逻辑：验证用户是否存在 -> 创建用户 → 生成 Token  → 响应结果
 @router.post("/register")
 async def register(user_data: UserRequest, db: AsyncSession = Depends(get_db)):
-    # 注册逻辑：验证用户是否存在 -> 创建用户 → 生成 Token  → 响应结果
     # 检查用户名是否已被注册
     existing_user = await users.get_user_by_username(db, user_data.username)
     # 用户名已存在时抛出 400 错误请求异常
@@ -42,9 +44,9 @@ async def register(user_data: UserRequest, db: AsyncSession = Depends(get_db)):
     # 返回标准化的成功响应，包含注册成功消息和用户认证数据
     return success_response(message="注册成功", data=response_data)
 
+# 登录逻辑：验证用户是否存在 -> 验证密码 -> 生成 Token  → 响应结果
 @router.post("/login")
 async def login(user_data: UserRequest, db: AsyncSession = Depends(get_db)):
-    # 登录逻辑：验证用户是否存在 -> 验证密码 -> 生成 Token  → 响应结果
     # 执行用户身份认证，验证用户名和密码
     user = await users.authenticate_user(db, user_data.username, user_data.password)
 
@@ -58,3 +60,16 @@ async def login(user_data: UserRequest, db: AsyncSession = Depends(get_db)):
     response_data = UserAuthResponse(token=token, user_info=UserInfoResponse.model_validate(user))
     # 返回标准化的成功响应，包含登录成功消息和用户认证数据
     return success_response(message="登录成功啦", data=response_data)
+
+
+# 查Token查用户 → 封装crud → 功能整合成一个工具函数 → 路由导入使用: 依赖注入
+@router.get("/info")
+async def get_user_info(user: User = Depends(get_current_user)):
+    """
+    通过依赖注入自动验证用户身份，返回已认证用户的详细信息。
+    需要携带有效的 Authorization Token 访问。
+    Parameters:
+        user (User): 通过 get_current_user 依赖注入的当前认证用户对象
+    """
+    # 将 ORM 用户对象转换为 Pydantic 响应模型并返回标准化响应
+    return success_response(message="获取用户信息成功", data=UserInfoResponse.model_validate(user))
