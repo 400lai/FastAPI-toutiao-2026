@@ -5,7 +5,7 @@ from starlette import status
 from config.db_config import get_db
 from crud import users
 from models.users import User
-from schemas.users import UserRequest, UserAuthResponse, UserInfoResponse, UserUpdateRequest
+from schemas.users import UserRequest, UserAuthResponse, UserInfoResponse, UserUpdateRequest, UserChangePasswordRequest
 from utils.auth import get_current_user
 from utils.response import success_response
 
@@ -84,3 +84,18 @@ async def update_user_info(user_data: UserUpdateRequest, user: User = Depends(ge
 
     # 将更新后的 ORM 用户对象转换为 Pydantic 响应模型并返回标准化响应
     return success_response(message="更新用户信息成功", data=UserInfoResponse.model_validate(user))
+
+@router.put("/password")
+async def update_password(
+        password_data: UserChangePasswordRequest,
+        user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db)):
+    # 调用 CRUD 服务执行密码修改操作，传入数据库会话、用户对象、旧密码和新密码
+    res_change_pwd = await users.change_password(db, user, password_data.old_password, password_data.new_password)
+
+    # 密码修改失败时抛出 500 服务器内部错误异常
+    if not res_change_pwd:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="修改密码失败，请稍后再试")
+
+    # 返回标准化的成功响应
+    return success_response(message="修改密码成功")

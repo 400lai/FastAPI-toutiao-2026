@@ -4,44 +4,91 @@
 
 ## 项目概述
 
-本项目为头条应用提供 RESTful API 后端服务，利用 FastAPI 的高性能和异步特性。
+本项目是一个基于 FastAPI 开发的头条应用后端服务，提供新闻管理、用户认证等核心功能的 RESTful API。采用异步编程模型，结合 SQLAlchemy 异步 ORM 和 MySQL 数据库，实现了高性能的 API 服务。
 
 ## 技术栈
 
 - **框架**: FastAPI
-- **语言**: Python 3.x
+- **语言**: Python 3.11+
 - **服务器**: Uvicorn (ASGI)
+- **数据库**: MySQL
+- **ORM**: SQLAlchemy (异步)
+- **认证**: JWT (JSON Web Token)
+- **密码加密**: bcrypt
 
 ## 项目结构
 
 ```
 toutiao_backend/
-├── main.py              # 主应用入口文件
-├── test_main.http       # HTTP 测试请求文件
-└── README.md            # 项目文档
+├── main.py                      # 应用入口文件
+├── config/                      # 配置文件目录
+│   └── db_config.py            # 数据库配置
+├── models/                      # 数据库模型层
+│   ├── users.py                # 用户模型
+│   └── news.py                 # 新闻模型
+├── schemas/                     # Pydantic 模型层（数据验证）
+│   └── users.py                # 用户数据验证模型
+├── routers/                     # 路由控制器层
+│   ├── users.py                # 用户相关路由
+│   └── news.py                 # 新闻相关路由
+├── crud/                        # 数据库操作层
+│   ├── users.py                # 用户数据库操作
+│   └── news.py                 # 新闻数据库操作
+├── utils/                       # 工具函数层
+│   ├── auth.py                 # 认证工具
+│   ├── security.py             # 安全工具（密码加密）
+│   ├── response.py             # 响应格式化工具
+│   ├── exception.py            # 自定义异常
+│   └── exception_handlers.py   # 异常处理器
+├── test_main.http              # HTTP 测试请求文件
+└── README.md                   # 项目文档
 ```
 
 ## 安装
 
-1. 克隆项目：
+### 1. 克隆项目
+
 ```bash
-git clone <https://github.com/400lai/FastAPI-toutiao-2026.git>
+git clone https://github.com/400lai/FastAPI-toutiao-2026.git
 cd toutiao_backend
 ```
 
-2. 安装依赖：
+### 2. 创建虚拟环境（推荐）
+
 ```bash
-pip install fastapi uvicorn
+# Windows
+python -m venv venv
+venv\Scripts\activate
+
+# Linux/Mac
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 3. 安装依赖
+
+```bash
+pip install fastapi uvicorn sqlalchemy pymysql bcrypt python-jose[crypto] passlib python-dotenv
+```
+
+### 4. 配置数据库
+
+在 `config/db_config.py` 中配置 MySQL 数据库连接信息：
+
+```python
+DATABASE_URL = "mysql+aiomysql://username:password@localhost:3306/toutiao_db"
 ```
 
 ## 使用方法
 
 ### 启动服务器
 
-运行开发服务器：
-
 ```bash
+# 开发环境（自动重载）
 uvicorn main:app --reload
+
+# 生产环境
+uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
 API 服务将在 `http://127.0.0.1:8000` 启动

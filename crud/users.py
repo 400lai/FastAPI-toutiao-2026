@@ -116,3 +116,20 @@ async def update_user(db: AsyncSession, username: str, user_data: UserUpdateRequ
     # 查询并返回更新后的用户完整信息
     updated_user = await get_user_by_username(db, username)
     return updated_user
+
+# 修改密码: 验证旧密码 → 新密码加密 → 修改密码
+async def change_password(db: AsyncSession, user: User, old_password: str, new_password: str):
+    # 验证旧密码是否正确，不匹配则返回 False
+    if not security.verify_password(old_password, user.password):
+        return False
+
+    # 对新密码进行 bcrypt 哈希加密
+    hashed_new_pwd = security.get_hash_password(new_password)
+    # 更新用户对象的密码字段为加密后的新密码
+    user.password = hashed_new_pwd
+
+    # 将用户对象添加到会话并提交，确保 SQLAlchemy 跟踪变更并持久化
+    db.add(user)        # 避免 session 过期或关闭导致的提交失败问题
+    await db.commit()   # 刷新用户对象状态，获取数据库中的最新值
+    await db.refresh(user)
+    return True
