@@ -25,19 +25,7 @@ async def register(user_data: UserRequest, db: AsyncSession = Depends(get_db)):
     user = await users.create_user(db, user_data)
     # 为新用户生成访问令牌
     token = await users.create_token(db, user.id)
-    # return {
-    #   "code": 200,
-    #   "message": "注册成功",
-    #   "data": {
-    #     "token": token,
-    #     "userInfo": {
-    #       "id": user.id,
-    #       "username": user.username,
-    #       "bio": user.bio,
-    #       "avatar": user.avatar
-    #     }
-    #   }
-    # }
+
     # 构建认证响应数据：包含访问令牌和完整的用户信息
     response_data = UserAuthResponse(token=token, user_info=UserInfoResponse.model_validate(user))
 

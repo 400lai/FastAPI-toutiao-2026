@@ -60,8 +60,8 @@ async def create_token(db: AsyncSession, user_id: int):
         # 无记录则创建新的 Token 记录并提交
         user_token = UserToken(user_id=user_id, token=token, expires_at=expires_at)
         db.add(user_token)
-        await db.commit()
 
+    await db.commit()
     return token
 
 async def authenticate_user(db: AsyncSession, username: str, password: str):

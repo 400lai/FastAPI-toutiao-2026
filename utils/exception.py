@@ -9,7 +9,6 @@ from starlette import status
 # 生产模式：返回简化错误信息
 DEBUG_MODE = True  # 教学项目保持开启
 
-
 async def http_exception_handler(request: Request, exc: HTTPException):
     """
     处理 HTTPException 异常
@@ -23,7 +22,6 @@ async def http_exception_handler(request: Request, exc: HTTPException):
             "data": None
         }
     )
-
 
 async def integrity_error_handler(request: Request, exc: IntegrityError):
     """
@@ -57,7 +55,6 @@ async def integrity_error_handler(request: Request, exc: IntegrityError):
         }
     )
 
-
 async def sqlalchemy_error_handler(request: Request, exc: SQLAlchemyError):
     """
     处理 SQLAlchemy 数据库错误
@@ -82,7 +79,6 @@ async def sqlalchemy_error_handler(request: Request, exc: SQLAlchemyError):
             "data": error_data
         }
     )
-
 
 async def general_exception_handler(request: Request, exc: Exception):
     """

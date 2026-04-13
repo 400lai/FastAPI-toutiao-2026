@@ -65,24 +65,24 @@ class UserAuthResponse(BaseModel):
         from_attributes=True  # 支持从 ORM 模型属性加载数据
     )
 
+"""
+用户信息更新请求数据模型
+用于接收用户提交的信息更新请求，所有字段均为可选，支持部分更新。
+"""
 class UserUpdateRequest(BaseModel):
-    """
-    用户信息更新请求数据模型
-    用于接收用户提交的信息更新请求，所有字段均为可选，支持部分更新。
-    """
     nickname: str = None
     avatar: str = None
     gender: str = None
     bio: str = None
     phone: str = None
 
+"""
+用户修改密码请求数据模型
+Attributes:
+old_password (str): 用户的当前密码（旧密码），用于验证身份
+new_password (str): 用户的新密码，最小长度为 6 个字符
+"""
 class UserChangePasswordRequest(BaseModel):
-    """
-    用户修改密码请求数据模型
-    Attributes:
-       old_password (str): 用户的当前密码（旧密码），用于验证身份
-       new_password (str): 用户的新密码，最小长度为 6 个字符
-    """
     old_password: str = Field(..., alias="oldPassword", description="旧密码")
     new_password: str = Field(..., min_length=6, alias="newPassword", description="新密码")
 
