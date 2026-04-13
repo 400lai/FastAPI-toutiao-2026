@@ -40,7 +40,7 @@ async def get_json_cache(key: str):
 # 设置缓存 setex key (key, expire, value)
 async def set_cache(key: str, value: Any, expire: int = 3600):
     try:
-        if isinstance(value, (dict, list)):
+        if isinstance(value, (dict, list)): # 判断 value 是否为字典或列表
             # 将字典或列表序列化为 JSON 字符串
             value = json.dumps(value, ensure_ascii=False) # 中文默认编码为 ASCII，设置 ensure_ascii=False，将中文编码为 UTF-8
         await redis_client.setex(key, expire, value)

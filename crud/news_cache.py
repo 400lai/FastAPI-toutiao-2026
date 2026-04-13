@@ -2,8 +2,9 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select, func, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from cache.news_cache import get_cached_categories, set_cached_categories
+from cache.news_cache import get_cached_categories, set_cached_categories, get_cache_news_list, set_cache_news_list
 from models.news import Category, News
+from schemas.base import NewsItemBase
 
 """
 数据库操作模块：新闻相关操作
@@ -28,10 +29,27 @@ async def get_categories(db: AsyncSession, skip: int = 0, limit: int = 100):
 
 
 async def get_news_list(db: AsyncSession, category_id: int, skip: int = 0, limit: int = 10):
+    # 先尝试从缓存中获取新闻数据
+    # 跳过的数量skip = (页码 - 1) * 每页数量 -> 页码 = 跳过的数量 / 每页数量 + 1
+    page = skip // limit + 1
+
+    cached_news_list = await get_cache_news_list(category_id, page, limit)  # 缓存数据json
+    if cached_news_list:
+        # 将缓存中的JSON数据转换为News对象列表并返回
+        return [News(**item) for item in cached_news_list]
     # 查询的是指定分类下的所有新闻
     stmt = select(News).where(News.category_id == category_id).offset(skip).limit(limit)
     result = await db.execute(stmt)
-    return result.scalars().all()
+    news_list = result.scalars().all()
+
+    # 写入缓存
+    if news_list:
+        # 先把 ORM 数据转换为 字典才能写入缓存
+        # ORM 转成 Pydantic,再转为 字典
+        news_data = [NewsItemBase.model_validate(item).model_dump(mode="json", by_alias=False) for item in news_list]
+        await set_cache_news_list(category_id, page, limit, news_data)
+
+    return news_list
 
 async def get_news_count(db: AsyncSession, category_id: int):
     # 查询的是指定分类下的新闻数量

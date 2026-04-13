@@ -67,7 +67,7 @@ async def get_news_list(
     # 计算分页偏移量
     offset = (page - 1) * page_size
     # 查询当前页的新闻列表
-    news_list = await news.get_news_list(db, category_id, offset, page_size)
+    news_list = await news_cache.get_news_list(db, category_id, offset, page_size)
     # 查询指定分类下的新闻总数
     total = await news.get_news_count(db, category_id)
     # 判断是否还有更多数据：(已跳过的数量 + 当前页数量) < 总数量
