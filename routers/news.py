@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.db_config import get_db
-from crud import news
+from crud import news, news_cache
 
 # 创建 APIRouter 实例
 # prefix 路由前缀（API 接口规范文档）
@@ -31,7 +31,7 @@ async def get_categories(skip: int = 0, limit: int = 100, db: AsyncSession = Dep
                 - msg (str): 操作结果消息
                 - data (List[Category]): 新闻分类数据列表
         """
-    categories = await news.get_categories(db, skip, limit)
+    categories = await news_cache.get_categories(db, skip, limit)
     return {
         "code": 200,
         "msg": "获取新闻分类列表成功",

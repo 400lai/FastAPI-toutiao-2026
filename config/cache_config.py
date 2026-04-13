@@ -4,15 +4,17 @@ from typing import Any
 
 import redis.asyncio as redis
 
-REDIS_HOST = "localhost"
+REDIS_HOST = "192.168.100.128"
 REDIS_PORT = 6379
 REDIS_DB = 0
+REDIS_PASSWORD = "123456"
 
 # 创建redis连接对象
 redis_client = redis.Redis(
     host=REDIS_HOST,  # Redis 服务器的主机地址
     port=REDIS_PORT,  # Redis 端口号
     db=REDIS_DB,  # Redis 数据库编号，0~15
+    password=REDIS_PASSWORD,
     decode_responses=True  # Redis 默认返回的响应是字节对象，设置decode_responses=True，将字节对象转换为字符串对象
 )
 

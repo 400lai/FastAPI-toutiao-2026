@@ -9,7 +9,7 @@ from schemas.favorite import FavoriteCheckResponse, FavoriteAddRequest, Favorite
 from utils.auth import get_current_user
 from utils.response import success_response
 
-router = APIRouter(prefix="api/favorite", tags=["favorite"])
+router = APIRouter(prefix="/api/favorite", tags=["favorite"])
 
 @router.get("/check")
 async def check_favorite(
@@ -23,7 +23,7 @@ async def check_favorite(
 
 @router.post("/add")
 async def add_favorite(
-        data: int = FavoriteAddRequest,
+        data: FavoriteAddRequest,
         user: User = Depends(get_current_user),
         db: AsyncSession = Depends(get_db)
 ):
